@@ -22,7 +22,7 @@ class AJamCharacter : public ACharacter
 
 public:
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStatusComponent* StatusComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -270,6 +270,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Respawn();
+
+	UFUNCTION(BlueprintCallable)
+	void GameClear();
 
 	UPROPERTY(EditDefaultsOnly)
 	UAnimationAsset* DeathAnim;
