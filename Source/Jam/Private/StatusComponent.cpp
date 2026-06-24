@@ -54,7 +54,20 @@ void UStatusComponent::DecreaseMana(float Amount)
 
 void UStatusComponent::IncreaseExp(float Amount)
 {
+	if (Level == 10) return;
+	
 	CurrentExp += Amount;
+
+	if (CurrentExp >= 100.0f)
+	{
+		Level++;
+		
+		if (Level == 10) CurrentExp = 0.0f;
+		else CurrentExp -= 100.0f;
+		
+		OnLevelChanged.Broadcast();
+	}
+	
 	OnExpChanged.Broadcast();
 }
 

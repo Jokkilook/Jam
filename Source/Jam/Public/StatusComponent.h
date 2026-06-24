@@ -69,6 +69,10 @@ public:
 	float GetCurrentExp() const { return CurrentExp; }
 	UFUNCTION(BlueprintCallable)
 	float GetCurrentExpPercent() const { return CurrentExp / MaxExp; }
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth() const { return MaxHealth; }
+	UFUNCTION(BlueprintCallable)
+	float GetMaxMana() const { return MaxMana; }
 
 	//스탯 영향 함수
 	UFUNCTION(BlueprintCallable)
@@ -81,6 +85,10 @@ public:
 	void DecreaseMana(float Amount);
 	UFUNCTION(BlueprintCallable)
 	void IncreaseExp(float Amount);
+	UFUNCTION(BlueprintCallable)
+	void AddMaxHealth(float Amount) { MaxHealth += Amount; }
+	UFUNCTION(BlueprintCallable)
+	void AddMaxMana(float Amount) { MaxMana += Amount; }
 
 	//상태 최신화
 	UFUNCTION(BlueprintCallable)

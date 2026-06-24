@@ -4,11 +4,9 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "JamPlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -74,6 +72,8 @@ void AJamCharacter::BeginPlay()
 		StatusComponent->RefreshStatus();
 
 		StatusComponent->OnDeath.AddDynamic(this, &AJamCharacter::OnDeath);
+
+		StatusComponent->OnLevelChanged.AddDynamic(this, &AJamCharacter::LevelUp);
 	}
 }
 
@@ -117,12 +117,23 @@ void AJamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	}
 }
 
-float AJamCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-	class AController* EventInstigator, AActor* DamageCauser)
+float AJamCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (StatusComponent && ActualDamage > 0)
+	{
+		StatusComponent->DecreaseHealth(ActualDamage);
+
+		if (StatusComponent->GetCurrentHealth() <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player is dead"));
+		}
+	}
+
+	return ActualDamage;
 }
+
 
 void AJamCharacter::Move(const FInputActionValue& Value)
 {
@@ -148,7 +159,7 @@ void AJamCharacter::Teleport()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < TeleportManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < TeleportManaUse)
 	{
 		return;
 	}
@@ -159,7 +170,7 @@ void AJamCharacter::Teleport()
 		return;
 	}
 	
-	StatusComponent->DecreaseMana(TeleportManaUse);
+	if (!IsCoolZero) StatusComponent->DecreaseMana(TeleportManaUse);
 	
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (!PC) return;
@@ -224,7 +235,7 @@ void AJamCharacter::ManaBullet()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < ManaBulletManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < ManaBulletManaUse)
 	{
 		return;
 	}
@@ -256,7 +267,7 @@ void AJamCharacter::FireBall()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < FireBallManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < FireBallManaUse)
 	{
 		return;
 	}
@@ -289,7 +300,7 @@ void AJamCharacter::IceStorm()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < IceStormManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < IceStormManaUse)
 	{
 		return;
 	}
@@ -322,7 +333,7 @@ void AJamCharacter::EarthQuake()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < EarthQuakeManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < EarthQuakeManaUse)
 	{
 		return;
 	}
@@ -355,7 +366,7 @@ void AJamCharacter::Binding()
 	if (!StatusComponent) return;
 	
 	//마나 없음
-	if (StatusComponent->GetCurrentMana() < BindingManaUse)
+	if (!IsCoolZero && StatusComponent->GetCurrentMana() < BindingManaUse)
 	{
 		return;
 	}
@@ -411,6 +422,13 @@ void AJamCharacter::StartGod()
 void AJamCharacter::CoolZero()
 {
 	IsCoolZero = true;
+
+	GetWorldTimerManager().ClearTimer(TeleportCoolTimer);
+	GetWorldTimerManager().ClearTimer(ManaBulletCoolTimer);
+	GetWorldTimerManager().ClearTimer(FireBallCoolTimer);
+	GetWorldTimerManager().ClearTimer(IceStormCoolTimer);
+	GetWorldTimerManager().ClearTimer(EarthQuakeCoolTimer);
+	GetWorldTimerManager().ClearTimer(BindingCoolTimer);
 	
 	TeleportCoolTime = 0.1f;
 	ManaBulletCoolTime = 0.1f;
@@ -449,6 +467,58 @@ void AJamCharacter::StartCoolZero()
 	CoolZero();
 }
 
+void AJamCharacter::LevelUp()
+{
+	int32 CurrentLevel = StatusComponent->GetLevel();
+	int32 RandomIndex = 0;
+
+	if (StatusComponent)
+	{
+		StatusComponent->AddMaxHealth(15.0f);
+		StatusComponent->AddMaxMana(15.0f);
+		StatusComponent->IncreaseHealth(StatusComponent->GetMaxHealth());
+		StatusComponent->IncreaseMana(StatusComponent->GetMaxMana());
+	}
+	
+	switch (CurrentLevel)
+	{
+		case 2:
+			CanFireBall = true;
+			break;
+		case 3:
+			RandomIndex = FMath::RandRange(0, DebuffList.Num() - 1);
+			DebuffList.RemoveAt(RandomIndex);
+			OnDebuffChanged.Broadcast();
+			break;
+		case 4:
+			CanIceStorm = true;
+			break;
+		case 5:
+			RandomIndex = FMath::RandRange(0, DebuffList.Num() - 1);
+			DebuffList.RemoveAt(RandomIndex);
+			OnDebuffChanged.Broadcast();
+			break;
+		case 6:
+			break;
+		case 7:
+			RandomIndex = FMath::RandRange(0, DebuffList.Num() - 1);
+			DebuffList.RemoveAt(RandomIndex);
+			OnDebuffChanged.Broadcast();
+			CanEarthQuake = true;
+			break;
+		case 8:
+			break;
+		case 9:
+			RandomIndex = FMath::RandRange(0, DebuffList.Num() - 1);
+			DebuffList.RemoveAt(RandomIndex);
+			OnDebuffChanged.Broadcast();
+			break;
+		case 10:
+			CanBinding = true;
+			break;
+	}
+}
+
 void AJamCharacter::OnDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] DEAD!!!!!!"))
@@ -462,7 +532,7 @@ void AJamCharacter::ApplyRandomDebuff()
 	int32 RandomIndex = FMath::RandRange(0, DebuffList.Num() - 1);
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Debuff %d"), RandomIndex)
 
-	switch (RandomIndex)
+	switch (DebuffList[RandomIndex])
 	{
 		case 0:
 			HealthDebuff();
@@ -490,6 +560,7 @@ void AJamCharacter::HealthDebuff()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Health Debuff"));
 		StatusComponent->DecreaseHealth(HealthDebuffAmount);
+		OnDebuffActivated.Broadcast(0);
 	}
 }
 
@@ -499,6 +570,7 @@ void AJamCharacter::ManaDebuff()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Mana Debuff"));
 		StatusComponent->DecreaseMana(ManaDebuffAmount);
+		OnDebuffActivated.Broadcast(1);
 	}
 }
 
@@ -506,6 +578,7 @@ void AJamCharacter::SpeedDebuff()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Speed Debuff"));
 	MovementEffector = 1.0f - (SpeedDebuffRate / 100.0f);
+	OnDebuffActivated.Broadcast(2);
 
 	GetWorldTimerManager().SetTimer(
 		SpeedDebuffTimer,
@@ -518,6 +591,7 @@ void AJamCharacter::AttackDebuff()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Attacking Debuff"));
 	AttackRate = 1.0f - (AttackDebuffRate / 100.0f);
+	OnDebuffActivated.Broadcast(3);
 
 	GetWorldTimerManager().SetTimer(
 		AttackDebuffTimer,
@@ -530,6 +604,7 @@ void AJamCharacter::DamageDebuff()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Damage Debuff"));
 	DamageRate = 1.0f - (DamageDebuffRate / 100.0f);
+	OnDebuffActivated.Broadcast(4);
 
 	GetWorldTimerManager().SetTimer(
 		DamageDebuffTimer,
@@ -563,21 +638,4 @@ void AJamCharacter::StackDiscord()
 		DiscordStack = 0;
 		ApplyRandomDebuff();
 	}
-}
-
-float AJamCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	if (StatusComponent && ActualDamage > 0)
-	{
-		StatusComponent->DecreaseHealth(ActualDamage);
-
-		if (StatusComponent->GetCurrentHealth() <= 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Player is dead"));
-		}
-	}
-
-	return ActualDamage;
 }

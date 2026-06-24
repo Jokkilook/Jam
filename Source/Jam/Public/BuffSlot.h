@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Jam/JamCharacter.h"
 #include "BuffSlot.generated.h"
 
 /**
@@ -16,6 +17,11 @@ class JAM_API UBuffSlot : public UUserWidget
 
 public:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AJamCharacter* JamCharacterRef;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 BuffIndex;
+	
 	UPROPERTY(meta=(BindWidget))
 	class UImage* BuffImage;
 	UPROPERTY(meta=(BindWidget))
@@ -25,6 +31,8 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	UFUNCTION()
-	void SetBuffSlot(UTexture2D* Icon, FText NewStackText, float CoolTimePercent);
+	void SetBuffSlot(UTexture2D* Icon, int8 NewBuffIndex, AJamCharacter* Owner);
 };

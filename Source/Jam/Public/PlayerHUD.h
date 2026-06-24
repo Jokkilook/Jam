@@ -12,6 +12,7 @@ class UHorizontalBox;
 /**
  * 
  */
+
 UCLASS()
 class JAM_API UPlayerHUD : public UUserWidget
 {
@@ -30,6 +31,11 @@ public:
 	UProgressBar* ExpBar;
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* LevelText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HealthText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ManaText;
 
 	//텔레포트 슬롯
 	UPROPERTY(meta = (BindWidget))
@@ -102,6 +108,12 @@ public:
 	//버프 아이콘 리스트
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<UTexture2D*> DebuffIconList;
+
+	//버프 애님
+	UPROPERTY(meta=(BindWidget))
+	UImage* DebuffAlarm;
+	UPROPERTY(meta=(BindWidgetAnim), Transient)
+	UWidgetAnimation* DebuffAlarmAnim;
 	
 	virtual void NativeConstruct() override;
 
@@ -126,6 +138,9 @@ public:
 	void SetEarthQuakeSlot();
 	UFUNCTION()
 	void SetBindingSlot();
+
+	UFUNCTION()
+	void OnDebuffActivated(int8 DebuffIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void RefreshSlots();

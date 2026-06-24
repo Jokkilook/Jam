@@ -9,6 +9,9 @@
 class UPlayerHUD;
 struct FInputActionValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDebuffChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDebuffActivated, int8, DebuffIndex);
+
 UCLASS(Blueprintable)
 class AJamCharacter : public ACharacter
 {
@@ -58,7 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Teleport")
 	float TeleportCoolTime = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Teleport")
-	float TeleportManaUse = 5.0f;
+	float TeleportManaUse = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Teleport")
 	bool CanTeleport = true;
 	
@@ -142,7 +145,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;	
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;	
 	
 	UFUNCTION(BlueprintCallable)
 	void Move(const FInputActionValue& Value);
@@ -184,9 +187,15 @@ public:
 	void StartCoolZero();
 
 	UFUNCTION(BlueprintCallable)
+	void LevelUp();
+
+	UFUNCTION(BlueprintCallable)
 	void OnDeath();
 
 	//버어프
+	FOnDebuffChanged OnDebuffChanged;
+	FOnDebuffActivated OnDebuffActivated;
+	
 	//스택
 	UPROPERTY(BlueprintReadOnly)
 	uint8 DiscordStack = 0;

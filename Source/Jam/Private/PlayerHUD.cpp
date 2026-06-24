@@ -22,6 +22,9 @@ void UPlayerHUD::NativeConstruct()
 		JamCharacterRef->StatusComponent->OnManaChanged.AddDynamic(this, &UPlayerHUD::SetManaBar);
 		JamCharacterRef->StatusComponent->OnExpChanged.AddDynamic(this, &UPlayerHUD::SetExpBar);
 		JamCharacterRef->StatusComponent->OnLevelChanged.AddDynamic(this, &UPlayerHUD::SetLevelText);
+		JamCharacterRef->OnDebuffChanged.AddDynamic(this, &UPlayerHUD::RefreshDebuffs);
+		JamCharacterRef->OnDebuffActivated.AddDynamic(this, &UPlayerHUD::OnDebuffActivated);
+		RefreshDebuffs();
 	}
 }
 
@@ -30,6 +33,16 @@ void UPlayerHUD::SetHealthBar()
 	if (JamCharacterRef)
 	{
 		HealthBar->SetPercent(JamCharacterRef->StatusComponent->GetCurrentHealthPercent());
+
+		int32 CurrentHP = FMath::FloorToInt(JamCharacterRef->StatusComponent->GetCurrentHealth());
+		int32 MaxHP = FMath::FloorToInt(JamCharacterRef->StatusComponent->GetMaxHealth());
+
+		FString HPString = FString::Printf(TEXT("%d / %d"), CurrentHP, MaxHP);
+
+		if (HealthText)
+		{
+			HealthText->SetText(FText::FromString(HPString));
+		}
 	}
 }
 
@@ -38,6 +51,16 @@ void UPlayerHUD::SetManaBar()
 	if (JamCharacterRef)
 	{
 		ManaBar->SetPercent(JamCharacterRef->StatusComponent->GetCurrentManaPercent());
+
+		int32 CurrentMP = FMath::FloorToInt(JamCharacterRef->StatusComponent->GetCurrentMana());
+		int32 MaxMP = FMath::FloorToInt(JamCharacterRef->StatusComponent->GetMaxMana());
+
+		FString MPString = FString::Printf(TEXT("%d / %d"), CurrentMP, MaxMP);
+
+		if (ManaText)
+		{
+			ManaText->SetText(FText::FromString(MPString));
+		}
 	}
 }
 
@@ -45,7 +68,7 @@ void UPlayerHUD::SetExpBar()
 {
 	if (JamCharacterRef)
 	{
-		ExpBar->SetPercent(JamCharacterRef->StatusComponent->GetCurrentExp());
+		ExpBar->SetPercent(JamCharacterRef->StatusComponent->GetCurrentExp() / 100.0f);
 	}
 }
 
@@ -205,6 +228,12 @@ void UPlayerHUD::SetBindingSlot()
 	}
 }
 
+void UPlayerHUD::OnDebuffActivated(int8 DebuffIndex)
+{
+	DebuffAlarm->SetBrushFromTexture(DebuffIconList[DebuffIndex]);
+	PlayAnimation(DebuffAlarmAnim);
+}
+
 void UPlayerHUD::RefreshSlots()
 {
 	SetTeleportSlot();
@@ -224,23 +253,9 @@ void UPlayerHUD::RefreshDebuffs()
 		for (int8 Index : JamCharacterRef->DebuffList)
 		{
 			if (!BuffSlotClass) continue;
-
-			float CoolTime = 0.0f;
-			switch (Index)
-			{
-				case 2:
-					CoolTime = GetWorld()->GetTimerManager().GetTimerRemaining(JamCharacterRef->SpeedDebuffTimer) / JamCharacterRef->DebuffRemainingTime;
-					break;
-				case 3:
-					CoolTime = GetWorld()->GetTimerManager().GetTimerRemaining(JamCharacterRef->AttackDebuffTimer) / JamCharacterRef->DebuffRemainingTime;
-					break;
-				case 4:
-					CoolTime = GetWorld()->GetTimerManager().GetTimerRemaining(JamCharacterRef->DamageDebuffTimer) / JamCharacterRef->DebuffRemainingTime;
-					break;
-			}	
 			
 			UBuffSlot* NewSlot = CreateWidget<UBuffSlot>(GetWorld(), BuffSlotClass);
-			NewSlot->SetBuffSlot(DebuffIconList[Index], FText::GetEmpty(), CoolTime);
+			NewSlot->SetBuffSlot(DebuffIconList[Index], Index, JamCharacterRef);
 			NewSlot->AddToViewport();
 			DebuffSlotList->AddChild(NewSlot);
 		}
