@@ -64,6 +64,8 @@ public:
 	float TeleportManaUse = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Teleport")
 	bool CanTeleport = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Teleport")
+	USoundBase* TeleportSound;
 	
 	//마나샷 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
@@ -71,9 +73,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	float ManaBulletManaUse = 2.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
+	float ManaBulletDamage = 20.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	bool CanManaBullet = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	TSubclassOf<class ASkillProjectile> ManaBulletProjectileClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|ManaBullet")
+	USoundBase* ManaBulletSound;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	TSubclassOf<class ASkillProjectile> FireBallProjectileClass;
@@ -84,6 +90,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
 	float FireBallManaUse = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
+	float FireBallDamage = 40.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|FireBall")
+	USoundBase* FireBallSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
 	bool CanFireBall = false;
 	
 	//아이스스톰 스킬 설정
@@ -92,7 +102,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
 	float IceStormManaUse = 25.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
+	float IceStormDamage = 60.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
 	bool CanIceStorm = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
+	float IceStormAttackRadius = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
+	float IceStormMaxRangeRadius = 800.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|IceStorm")
+	USoundBase* IceStormSound;
 	
 	//지진 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
@@ -100,7 +118,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	float EarthQuakeManaUse = 35.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
+	float EarthQuakeDamage = 70.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	bool CanEarthQuake = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|EarthQuake")
+	USoundBase* EarthQuakeSound;
 	
 	//바인딩 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
@@ -108,14 +130,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
 	float BindingManaUse = 50.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
+	float BindingDamage = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
 	bool CanBinding = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding")
+	USoundBase* BindingSound;
 
 	//동료스킬 무적 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|God")
 	float GodCoolTime = 120.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|God")
 	float GodRemainingTime = 3.0f;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|God")
+	USoundBase* GodSound;
+	
 	//동료스킬 스킬쿨제로 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|CoolZero")
 	float CoolZeroCoolTime = 240.0f;
@@ -123,6 +151,8 @@ public:
 	float CoolZeroRemainingTime = 3.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skills|CoolZero")
 	bool IsCoolZero = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skills|CoolZero")
+	USoundBase* CoolZeroSound;
 	
 	//스킬 쿨타임 타이머스~
 	FTimerHandle TeleportCoolTimer;

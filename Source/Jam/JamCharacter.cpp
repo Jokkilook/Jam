@@ -14,6 +14,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Public/PlayerHUD.h"
 #include "Public/StatusComponent.h"
 
@@ -172,6 +174,11 @@ void AJamCharacter::Teleport()
 	}
 	
 	if (!IsCoolZero) StatusComponent->DecreaseMana(TeleportManaUse);
+
+	if (TeleportSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, TeleportSound, GetActorLocation());
+	}
 	
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (!PC) return;
@@ -285,6 +292,10 @@ void AJamCharacter::ManaBullet()
 
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] ManaBullet Used"))
 
+	if (ManaBulletSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ManaBulletSound, GetActorLocation());
+	}
 	
 	//스킬 사용 후 쿨타임 작동 
 	GetWorldTimerManager().SetTimer(
@@ -313,13 +324,17 @@ void AJamCharacter::FireBall()
 	}
 	
 	if (!IsCoolZero) StatusComponent->DecreaseMana(FireBallManaUse);
-
+	
 	//스킬 사용 로직========= 이 밑으로 구현
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] FireBall Used"))
 
-	//스킬 사용 로직========= 이 밑으로 구현
 	if (FireBallProjectileClass)
 	{
+		if (FireBallSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, FireBallSound, GetActorLocation());
+		}
+
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if (PC)
 		{
@@ -384,6 +399,87 @@ void AJamCharacter::IceStorm()
 	//스킬 사용 로직========= 이 밑으로 구현
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] IceStorm Used"))
 
+	if (IceStormSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, IceStormSound, GetActorLocation());
+	}
+	
+	APlayerController* PC = Cast<APlayerController>(GetController());
+    if (!PC) return;
+
+    FHitResult CursorHit;
+    // 1. 마우스 커서의 3D 월드 좌표를 가져옵니다.
+    if (PC->GetHitResultUnderCursor(ECC_Visibility, false, CursorHit))
+    {
+	    FVector StartLocation = GetActorLocation();
+    	FVector TargetLocation = CursorHit.ImpactPoint;
+
+    	// 거리를 정확하게 평면(X, Y) 기준으로만 계산하기 위해 Z축을 맞춰줍니다.
+    	TargetLocation.Z = StartLocation.Z;
+
+    	// 2. 캐릭터와 마우스 클릭 지점 사이의 실제 거리 계산
+    	float DistanceToTarget = FVector::Dist(StartLocation, TargetLocation);
+
+    	FVector FinalAttackCenter = TargetLocation;
+
+    	// 3. [핵심 조건] 최대 사거리(x)를 벗어났는지 체크
+    	if (DistanceToTarget > IceStormMaxRangeRadius)
+    	{
+    		// 마우스 방향의 단위 벡터(길이 1짜리)를 구합니다.
+    		FVector AttackDirection = (TargetLocation - StartLocation).GetSafeNormal();
+            
+    		// 현재 위치에서 해당 방향으로 '최대 사거리(MaxAttackRange)'만큼만 전진한 위치를 중심점으로 잡습니다.
+    		FinalAttackCenter = StartLocation + (AttackDirection * IceStormMaxRangeRadius);
+    	}
+
+    	// 4. 범위(반지름 n) 내의 타겟들을 감지 (OverlapMultiByChannel 사용)
+    	TArray<FHitResult> HitResults;
+    	FCollisionShape SphereShape = FCollisionShape::MakeSphere(IceStormAttackRadius); // 반지름 n 짜리 구체 생성
+    	FCollisionQueryParams QueryParams;
+    	QueryParams.AddIgnoredActor(this); // 시전자 제외
+
+    	// ECC_Pawn(캐릭터/몬스터) 채널을 대상으로 범위 검사
+    	bool bHit = GetWorld()->SweepMultiByChannel(
+			HitResults,
+			FinalAttackCenter,
+			FinalAttackCenter, // 시작과 끝을 같게 하면 그 자리에서 구체 검사를 합니다.
+			FQuat::Identity,
+			ECC_Pawn,
+			SphereShape,
+			QueryParams
+		);
+
+    	// 5. 디버그용 원 그리기 (에디터에서 범위 시각적으로 확인용)
+    	UKismetSystemLibrary::DrawDebugCircle(
+			GetWorld(),
+			FinalAttackCenter,
+			IceStormAttackRadius,
+			32,
+			FLinearColor::Red,
+			2.0f, // 2초 동안 표시
+			1.0f,
+			FVector(0, 0, 1) // 하늘 방향(Z축)을 기준으로 원을 그림
+		);
+
+    	// 6. 감지된 적들에게 데미지 적용
+    	if (bHit)
+    	{
+    		for (const FHitResult& Hit : HitResults)
+    		{
+    			AActor* HitActor = Hit.GetActor();
+    			if (HitActor)
+    			{
+    				UGameplayStatics::ApplyDamage(
+    					HitActor,
+    					IceStormDamage,
+    					GetController(),
+    					this,
+    					UDamageType::StaticClass());
+    			}
+    		}
+    	}
+    }
+
 	StackDiscord();
 	
 	//스킬 사용 후 쿨타임 작동 
@@ -417,6 +513,11 @@ void AJamCharacter::EarthQuake()
 	//스킬 사용 로직========= 이 밑으로 구현
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] EarthQuake Used"))
 
+	if (EarthQuakeSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EarthQuakeSound, GetActorLocation());
+	}
+	
 	StackDiscord();
 	
 	//스킬 사용 후 쿨타임 작동 
@@ -450,6 +551,11 @@ void AJamCharacter::Binding()
 	//스킬 사용 로직========= 이 밑으로 구현
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Binding Used"))
 
+	if (BindingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, BindingSound, GetActorLocation());
+	}
+	
 	StackDiscord();
 	
 	//스킬 사용 후 쿨타임 작동 
@@ -462,6 +568,11 @@ void AJamCharacter::Binding()
 
 void AJamCharacter::GodMode()
 {
+	if (GodSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, GodSound, GetActorLocation());
+	}
+	
 	AttackRate = 0.0f;
 	
 	GetWorldTimerManager().SetTimer(
@@ -489,6 +600,11 @@ void AJamCharacter::StartGod()
 
 void AJamCharacter::CoolZero()
 {
+	if (CoolZeroSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, CoolZeroSound, GetActorLocation());
+	}
+	
 	IsCoolZero = true;
 
 	GetWorldTimerManager().ClearTimer(TeleportCoolTimer);
