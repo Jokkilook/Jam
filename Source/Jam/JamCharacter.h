@@ -72,6 +72,8 @@ public:
 	float ManaBulletManaUse = 2.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	bool CanManaBullet = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
+	TSubclassOf<class ASkillProjectile> ManaBulletProjectileClass;
 	
 	//파이어볼 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
@@ -254,6 +256,10 @@ public:
 	//디스코드 스택 쌓기
 	void StackDiscord();
 	
+	// 타격 플래시 머티리얼
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitResponse")
+	UMaterialInterface* HitMaterial;
+
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -262,4 +268,8 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
+	TArray<UMaterialInterface*> OriginalMaterials;
+	FTimerHandle HitFlashTimerHandle;
+	void RestoreOriginalMaterials();
 };
