@@ -40,6 +40,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner")
 	bool bRespawn = true;
 
+	// 이 스포너에서 스폰된 몬스터가 주는 경험치량
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner", meta = (ClampMin = "0.0"))
+	float ExperienceReward = 50.f;
+
 	UFUNCTION(BlueprintCallable, Category = "Spawner")
 	void SpawnEnemy();
 
@@ -49,6 +53,8 @@ private:
 	void TryFillSpawnSlots();
 	UFUNCTION()
 	void OnEnemyDied(AActor* DestroyedActor);
+	UFUNCTION()
+	void OnSpawnedEnemyDied(float ExperienceAmount);
 
 	// 네비메시 위에서 유효한 랜덤 위치를 구함
 	bool GetRandomSpawnLocation(FVector& OutLocation) const;

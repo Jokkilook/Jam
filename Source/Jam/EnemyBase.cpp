@@ -91,6 +91,9 @@ void AEnemyBase::Die()
 	// 메시 콜리전 비활성화 (죽는 애니메이션 재생 유지)
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	// 경험치 델리게이트 브로드캐스트
+	OnEnemyDied.Broadcast(ExperienceReward);
+
 	// 3초 뒤 시체 제거 (Destroy가 EndPlay 자동 호출)
 	FTimerHandle DeathTimerHandle;
 	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemyBase::OnDeathFinished, 3.0f, false);

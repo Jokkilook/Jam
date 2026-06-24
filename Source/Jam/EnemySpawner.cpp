@@ -2,8 +2,11 @@
 
 #include "EnemySpawner.h"
 #include "EnemyBase.h"
+#include "JamCharacter.h"
+#include "Public/StatusComponent.h"
 #include "NavigationSystem.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 AEnemySpawner::AEnemySpawner()
 {
@@ -55,10 +58,15 @@ void AEnemySpawner::SpawnEnemy()
 	AEnemyBase* Spawned = GetWorld()->SpawnActor<AEnemyBase>(SelectedClass, SpawnLocation, SpawnRotation, Params);
 	if (!Spawned) return;
 
+	// 스포너에서 설정한 경험치량 적용
+	Spawned->ExperienceReward = ExperienceReward;
+
 	SpawnedEnemies.Add(Spawned);
 
 	// 에너미가 파괴될 때 재스폰 예약
 	Spawned->OnDestroyed.AddDynamic(this, &AEnemySpawner::OnEnemyDied);
+	// 에너미가 죽을 때 플레이어에게 경험치 전달
+	Spawned->OnEnemyDied.AddDynamic(this, &AEnemySpawner::OnSpawnedEnemyDied);
 }
 
 void AEnemySpawner::OnEnemyDied(AActor* DestroyedActor)
@@ -68,6 +76,15 @@ void AEnemySpawner::OnEnemyDied(AActor* DestroyedActor)
 
 	FTimerHandle Handle;
 	GetWorldTimerManager().SetTimer(Handle, this, &AEnemySpawner::TryFillSpawnSlots, RespawnDelay, false);
+}
+
+void AEnemySpawner::OnSpawnedEnemyDied(float ExperienceAmount)
+{
+	AJamCharacter* Player = Cast<AJamCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (Player && Player->StatusComponent)
+	{
+		Player->StatusComponent->IncreaseExp(ExperienceAmount);
+	}
 }
 
 bool AEnemySpawner::GetRandomSpawnLocation(FVector& OutLocation) const
