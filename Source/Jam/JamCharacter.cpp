@@ -18,8 +18,11 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Public/PlayerHUD.h"
 #include "Public/StatusComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Engine/OverlapResult.h"
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AJamCharacter::AJamCharacter()
 {
@@ -619,7 +622,90 @@ void AJamCharacter::Binding()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, BindingSound, GetActorLocation());
 	}
-	
+
+	// Boss 태그를 가진 액터를 찾아 BT 정지
+	TArray<AActor*> BossActors;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Boss"), BossActors);
+
+	// 나이아가라 컴포넌트 레퍼런스 수집 (종료 시 비활성화용)
+	TArray<UNiagaraComponent*> SpawnedEffects;
+
+	for (AActor* Boss : BossActors)
+	{
+		ACharacter* BossChar = Cast<ACharacter>(Boss);
+		if (!BossChar) continue;
+
+		// 보스에게 나이아가라 이펙트 부착 (루핑은 에셋에서 설정)
+		if (BindingEffect)
+		{
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				BindingEffect,
+				BossChar->GetRootComponent(),
+				NAME_None,
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				false  // bAutoDestroy = false (수동으로 종료)
+			);
+			if (NiagaraComp)
+			{
+				SpawnedEffects.Add(NiagaraComp);
+			}
+		}
+
+		// 보스 위치에서 피격 사운드 재생
+		if (BindingHitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, BindingHitSound, BossChar->GetActorLocation());
+		}
+
+		// 이동 정지
+		BossChar->GetCharacterMovement()->StopMovementImmediately();
+		BossChar->GetCharacterMovement()->DisableMovement();
+
+		// BT 정지
+		AAIController* AIC = Cast<AAIController>(BossChar->GetController());
+		if (AIC && AIC->GetBrainComponent())
+		{
+			AIC->GetBrainComponent()->StopLogic("Bound");
+		}
+	}
+
+	// BindingDuration 후 보스 BT 재개
+	GetWorldTimerManager().SetTimer(
+		BindingDurationTimer,
+		[this, SpawnedEffects]()
+		{
+			// 나이아가라 이펙트 종료
+			for (UNiagaraComponent* Comp : SpawnedEffects)
+			{
+				if (IsValid(Comp))
+				{
+					Comp->Deactivate();
+					Comp->DestroyComponent();
+				}
+			}
+
+			TArray<AActor*> BossActors;
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Boss"), BossActors);
+
+			for (AActor* Boss : BossActors)
+			{
+				ACharacter* BossChar = Cast<ACharacter>(Boss);
+				if (!BossChar) continue;
+
+				BossChar->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+				AAIController* AIC = Cast<AAIController>(BossChar->GetController());
+				if (AIC && AIC->GetBrainComponent())
+				{
+					AIC->GetBrainComponent()->RestartLogic();
+				}
+			}
+		},
+		BindingDuration,
+		false);
+
 	StackDiscord();
 	
 	//스킬 사용 후 쿨타임 작동 
