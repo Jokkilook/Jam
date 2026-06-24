@@ -1,25 +1,60 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Portal.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/PlayerController.h"
 
-// Sets default values
 APortal::APortal()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	TriggerVolume = CreateDefaultSubobject<USphereComponent>(TEXT("TriggerVolume"));
+	TriggerVolume->SetSphereRadius(100.f);
+	RootComponent = TriggerVolume;
 }
 
-// Called when the game starts or when spawned
 void APortal::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &APortal::OnTriggerOverlapBegin);
+
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (APawn* Pawn = PC->GetPawn())
+		{
+			PlayerStatus = Pawn->FindComponentByClass<UStatusComponent>();
+			if (PlayerStatus)
+			{
+				PlayerStatus->OnLevelChanged.AddDynamic(this, &APortal::OnPlayerLevelChanged);
+				SetPortalActive(PlayerStatus->GetLevel() >= RequiredLevel);
+			}
+		}
+	}
 }
 
-// Called every frame
-void APortal::Tick(float DeltaTime)
+void APortal::OnPlayerLevelChanged()
 {
-	Super::Tick(DeltaTime);
+	if (PlayerStatus)
+		SetPortalActive(PlayerStatus->GetLevel() >= RequiredLevel);
+}
 
+void APortal::OnTriggerOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bIsActive || !Destination) return;
+
+	ACharacter* Character = Cast<ACharacter>(OtherActor);
+	if (!Character) return;
+
+	if (Cast<APlayerController>(Character->GetController()))
+		Character->SetActorLocation(Destination->GetActorLocation());
+}
+
+void APortal::SetPortalActive(bool bActive)
+{
+	bIsActive = bActive;
+	SetActorHiddenInGame(!bActive);
+	SetActorEnableCollision(bActive);
 }

@@ -7,6 +7,7 @@
 #include "EnemySpawner.generated.h"
 
 class AEnemyBase;
+class UStatusComponent;
 
 UCLASS()
 class JAM_API AEnemySpawner : public AActor
@@ -40,6 +41,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner")
 	bool bRespawn = true;
 
+	// 플레이어가 이 레벨에 도달하면 소속 몬스터 전원 즉시 제거 (0 = 비활성)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner", meta = (ClampMin = "0", ClampMax = "10"))
+	uint8 ClearLevel = 0;
+
 	// 이 스포너에서 스폰된 몬스터가 주는 경험치량
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner", meta = (ClampMin = "0.0"))
 	float ExperienceReward = 50.f;
@@ -50,7 +55,16 @@ public:
 private:
 	TArray<TWeakObjectPtr<AEnemyBase>> SpawnedEnemies;
 
+	UPROPERTY()
+	UStatusComponent* PlayerStatus;
+
+	bool bCleared = false;
+
 	void TryFillSpawnSlots();
+	void ClearAllEnemies();
+
+	UFUNCTION()
+	void OnPlayerLevelChanged();
 	UFUNCTION()
 	void OnEnemyDied(AActor* DestroyedActor);
 	UFUNCTION()

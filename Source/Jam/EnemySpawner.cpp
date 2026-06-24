@@ -20,11 +20,22 @@ void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (ClearLevel > 0)
+	{
+		if (AJamCharacter* Player = Cast<AJamCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+		{
+			PlayerStatus = Player->StatusComponent;
+			if (PlayerStatus)
+				PlayerStatus->OnLevelChanged.AddDynamic(this, &AEnemySpawner::OnPlayerLevelChanged);
+		}
+	}
+
 	TryFillSpawnSlots();
 }
 
 void AEnemySpawner::TryFillSpawnSlots()
 {
+	if (bCleared) return;
 	if (EnemyClasses.Num() == 0) return;
 
 	// 죽은 약참조 정리
@@ -67,6 +78,24 @@ void AEnemySpawner::SpawnEnemy()
 	Spawned->OnDestroyed.AddDynamic(this, &AEnemySpawner::OnEnemyDied);
 	// 에너미가 죽을 때 플레이어에게 경험치 전달
 	Spawned->OnEnemyDied.AddDynamic(this, &AEnemySpawner::OnSpawnedEnemyDied);
+}
+
+void AEnemySpawner::OnPlayerLevelChanged()
+{
+	if (PlayerStatus && PlayerStatus->GetLevel() >= ClearLevel)
+		ClearAllEnemies();
+}
+
+void AEnemySpawner::ClearAllEnemies()
+{
+	bCleared = true;
+
+	for (TWeakObjectPtr<AEnemyBase>& Ptr : SpawnedEnemies)
+	{
+		if (Ptr.IsValid())
+			Ptr->Destroy();
+	}
+	SpawnedEnemies.Empty();
 }
 
 void AEnemySpawner::OnEnemyDied(AActor* DestroyedActor)
