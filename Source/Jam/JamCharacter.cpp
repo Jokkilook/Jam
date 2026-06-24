@@ -1,6 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JamCharacter.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "JamPlayerController.h"
+#include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
@@ -10,11 +15,15 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Public/PlayerHUD.h"
+#include "Public/StatusComponent.h"
 
 AJamCharacter::AJamCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	StatusComponent = CreateDefaultSubobject<UStatusComponent>(TEXT("StatusComponent"));
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -45,7 +54,55 @@ AJamCharacter::AJamCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
+void AJamCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (!PlayerHUD)
+	{
+		if (PlayerHUDClass)
+		{
+			PlayerHUD = CreateWidget<UPlayerHUD>(GetWorld(), PlayerHUDClass);
+			PlayerHUD->AddToViewport();
+		}
+	}
+
+	if (StatusComponent)
+	{
+		StatusComponent->RefreshStatus();
+	}
+}
+
 void AJamCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+}
+
+void AJamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(Movement, ETriggerEvent::Triggered, this, &AJamCharacter::Move);
+
+	}
+}
+
+void AJamCharacter::Move(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	UE_LOG(LogTemp, Warning, TEXT("MOVE X: %f, Y: %f"), MovementVector.X, MovementVector.Y);
+
+	if (Controller != nullptr)
+	{
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+		
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
 }

@@ -6,14 +6,38 @@
 #include "GameFramework/Character.h"
 #include "JamCharacter.generated.h"
 
+class UPlayerHUD;
+struct FInputActionValue;
+
 UCLASS(Blueprintable)
 class AJamCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY()
+	class UStatusComponent* StatusComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* IMC;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* Movement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* Look;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UPlayerHUD> PlayerHUDClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	UPlayerHUD* PlayerHUD;
+	
 	AJamCharacter();
 
+	virtual void BeginPlay() override;
+	
 	// Called every frame.
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -21,6 +45,11 @@ public:
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable)
+	void Move(const FInputActionValue& Value);
 
 private:
 	/** Top down camera */
