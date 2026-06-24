@@ -10,6 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnManaChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExpChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class JAM_API UStatusComponent : public UActorComponent
@@ -26,6 +27,8 @@ public:
 	FOnExpChanged OnExpChanged;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnLevelChanged OnLevelChanged;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FOnDeath OnDeath;
 	
 private:
 
@@ -47,6 +50,9 @@ private:
 public:	
 	// Sets default values for this component's properties
 	UStatusComponent();
+
+	//마나 회복 타이머
+	FTimerHandle ManaRegenTimer;
 
 	//스탯 반환 함수 - 값, 비율
 	UFUNCTION(BlueprintCallable)
@@ -79,7 +85,6 @@ public:
 	//상태 최신화
 	UFUNCTION(BlueprintCallable)
 	void RefreshStatus();
-	
 	
 protected:
 	// Called when the game starts

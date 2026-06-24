@@ -7,6 +7,8 @@
 #include "Jam/JamCharacter.h"
 #include "PlayerHUD.generated.h"
 
+class UBuffSlot;
+class UHorizontalBox;
 /**
  * 
  */
@@ -15,6 +17,8 @@ class JAM_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+		
 	UPROPERTY()
 	AJamCharacter* JamCharacterRef;
 
@@ -26,6 +30,78 @@ class JAM_API UPlayerHUD : public UUserWidget
 	UProgressBar* ExpBar;
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* LevelText;
+
+	//텔레포트 슬롯
+	UPROPERTY(meta = (BindWidget))
+	class UImage* TeleportImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* TeleportCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* TeleportBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TeleportCoolTimeText;
+	
+	//마나탄 슬롯
+	UPROPERTY(meta = (BindWidget))
+	UImage* ManaBulletImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ManaBulletCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* ManaBulletBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ManaBulletCoolTimeText;
+	
+	//파이어볼 슬롯
+	UPROPERTY(meta = (BindWidget))
+	UImage* FireBallImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* FireBallCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* FireBallBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* FireBallCoolTimeText;
+	
+	//아이스스톰 슬롯
+	UPROPERTY(meta = (BindWidget))
+	UImage* IceStormImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* IceStormCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* IceStormBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* IceStormCoolTimeText;
+	
+	//지진 슬롯
+	UPROPERTY(meta = (BindWidget))
+	UImage* EarthQuakeImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* EarthQuakeCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* EarthQuakeBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EarthQuakeCoolTimeText;
+	
+	//바인딩 슬롯
+	UPROPERTY(meta = (BindWidget))
+	UImage* BindingImage;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* BindingCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UImage* BindingBlockImage;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* BindingCoolTimeText;
+
+	//디버프 가로 박스
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* DebuffSlotList;
+
+	//디버프 슬롯 클래스
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UBuffSlot> BuffSlotClass;
+
+	//버프 아이콘 리스트
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TArray<UTexture2D*> DebuffIconList;
 	
 	virtual void NativeConstruct() override;
 
@@ -37,4 +113,23 @@ class JAM_API UPlayerHUD : public UUserWidget
 	void SetExpBar();
 	UFUNCTION()
 	void SetLevelText();
+
+	UFUNCTION()
+	void SetTeleportSlot();
+	UFUNCTION()
+	void SetManaBulletSlot();
+	UFUNCTION()
+	void SetFireBallSlot();
+	UFUNCTION()
+	void SetIceStormSlot();
+	UFUNCTION()
+	void SetEarthQuakeSlot();
+	UFUNCTION()
+	void SetBindingSlot();
+
+	UFUNCTION(BlueprintCallable)
+	void RefreshSlots();
+
+	UFUNCTION(BlueprintCallable)
+	void RefreshDebuffs();
 };

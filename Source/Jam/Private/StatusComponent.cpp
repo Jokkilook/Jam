@@ -28,6 +28,7 @@ void UStatusComponent::DecreaseHealth(float Amount)
 	if (CurrentHealth <= 0)
 	{
 		CurrentHealth = 0;
+		OnDeath.Broadcast();
 	}
 	OnHealthChanged.Broadcast();
 }	
@@ -68,10 +69,7 @@ void UStatusComponent::RefreshStatus()
 // Called when the game starts
 void UStatusComponent::BeginPlay()
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	Super::BeginPlay();	
 }
 
 
@@ -80,6 +78,10 @@ void UStatusComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (CurrentMana < MaxMana)
+	{
+		float ManaRegenAmount = 3.0f * DeltaTime;
+		IncreaseMana(ManaRegenAmount);
+	}
 }
 
