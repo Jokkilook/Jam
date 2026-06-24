@@ -182,7 +182,17 @@ public:
 	UNiagaraSystem* LevelUpEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 	USoundBase* LevelUpSound;
-	
+
+	//물약 회복 이펙트
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effect")
+	UNiagaraSystem* HealthHealEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundBase* HealthHealSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effect")
+	UNiagaraSystem* ManaHealEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundBase* ManaHealSound;
+
 	//스킬 쿨타임 타이머스~
 	FTimerHandle TeleportCoolTimer;
 	FTimerHandle ManaBulletCoolTimer;
