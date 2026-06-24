@@ -3,12 +3,15 @@
 
 #include "EnemyBase.h"
 #include "Animation/AnimInstance.h"
+#include "StatusComponent.h"
 
 AEnemyBase::AEnemyBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
 	Tags.Add("Enemy");
+	
+	StatusComponent = CreateDefaultSubobject<UStatusComponent>(TEXT("StatusComponent"));
 
 }
 
@@ -26,12 +29,5 @@ void AEnemyBase::Tick(float DeltaTime)
 
 void AEnemyBase::ExecuteAttack_Implementation()
 {
-	if (!AttackMontage) return;
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance) return;
-
-	// AnimInstance->Montage_Play(AttackMontage);
-	PlayAnimMontage(AttackMontage);
 }
 

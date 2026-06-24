@@ -7,6 +7,8 @@
 #include "Animation/AnimMontage.h"
 #include "EnemyBase.generated.h"
 
+class UStatusComponent;
+
 UCLASS()
 class JAM_API AEnemyBase : public ACharacter
 {
@@ -21,7 +23,7 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ExecuteAttack();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
@@ -30,4 +32,8 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsDead = false;
+	
+protected:
+	
+	UStatusComponent* StatusComponent;
 };

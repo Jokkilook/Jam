@@ -26,7 +26,7 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 	UAnimInstance* AnimInstance = Enemy->GetMesh()->GetAnimInstance();
 	if (!AnimInstance) return EBTNodeResult::Failed;
 
-	Enemy->ExecuteAttack();
+	Enemy->PlayAnimMontage(Enemy->AttackMontage);
 
 	UBehaviorTreeComponent* OwnerCompPtr = &OwnerComp;
 
