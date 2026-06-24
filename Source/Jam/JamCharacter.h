@@ -133,8 +133,14 @@ public:
 	float BindingDamage = 50.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
 	bool CanBinding = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
+	float BindingDuration = 5.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding")
 	USoundBase* BindingSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding")
+	USoundBase* BindingHitSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding")
+	class UNiagaraSystem* BindingEffect;
 
 	//동료스킬 무적 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|God")
@@ -161,6 +167,7 @@ public:
 	FTimerHandle IceStormCoolTimer;
 	FTimerHandle EarthQuakeCoolTimer;
 	FTimerHandle BindingCoolTimer;
+	FTimerHandle BindingDurationTimer;
 	FTimerHandle CoolZeroCoolTimer;
 	FTimerHandle CoolZeroRemainingTimer;
 	FTimerHandle GodCoolTimer;

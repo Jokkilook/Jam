@@ -100,6 +100,16 @@ void AEnemyBase::Die()
 	// 경험치 델리게이트 브로드캐스트
 	OnEnemyDied.Broadcast(ExperienceReward);
 
+	// 보스 태그가 있으면 페이드아웃
+	if (ActorHasTag("Boss"))
+	{
+		APlayerController* PC = GetWorld()->GetFirstPlayerController();
+		if (PC && PC->PlayerCameraManager)
+		{
+			PC->PlayerCameraManager->StartCameraFade(0.0f, 1.0f, 2.0f, FLinearColor::Black, false, true);
+		}
+	}
+
 	// 3초 뒤 시체 제거 (Destroy가 EndPlay 자동 호출)
 	FTimerHandle DeathTimerHandle;
 	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemyBase::OnDeathFinished, 3.0f, false);
