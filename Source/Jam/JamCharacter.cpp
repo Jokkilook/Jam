@@ -723,6 +723,8 @@ void AJamCharacter::GodMode()
 		UGameplayStatics::PlaySoundAtLocation(this, GodSound, GetActorLocation());
 	}
 	
+	SpawnEffect(GodEffect, GetActorLocation());
+	
 	AttackRate = 0.0f;
 	
 	GetWorldTimerManager().SetTimer(
@@ -755,6 +757,8 @@ void AJamCharacter::CoolZero()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, CoolZeroSound, GetActorLocation());
 	}
+
+	SpawnEffect(CoolZeroEffect, GetActorLocation());
 	
 	IsCoolZero = true;
 

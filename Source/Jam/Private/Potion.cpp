@@ -70,6 +70,9 @@ void APotion::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherA
                 StatusComp->IncreaseHealth(HealthRestoreAmount);
                 StatusComp->IncreaseMana(ManaRestoreAmount);
 
+            	if (HealthRestoreAmount > 0.0f) JamPlayer->SpawnEffect(JamPlayer->HealthHealEffect, JamPlayer->GetActorLocation());
+            	if (ManaRestoreAmount > 0.0f) JamPlayer->SpawnEffect(JamPlayer->ManaHealEffect, JamPlayer->GetActorLocation());
+
                 // [디버그] 먹은 후 수치 확인
                 float HealthAfter = StatusComp->GetCurrentHealth();
                 float ManaAfter = StatusComp->GetCurrentMana();
