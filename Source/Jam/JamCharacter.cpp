@@ -18,6 +18,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Public/PlayerHUD.h"
 #include "Public/StatusComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Engine/OverlapResult.h"
 
 AJamCharacter::AJamCharacter()
 {
@@ -190,6 +192,8 @@ void AJamCharacter::Teleport()
 		FVector StartLocation = GetActorLocation();
 		FVector TargetLocation = CursorHit.ImpactPoint;
 
+		SpawnEffect(TeleportEffect, StartLocation);
+
 		// 2. 높이(Z)를 현재 캐릭터 높이로 고정하여 평면상의 방향만 계산합니다.
 		TargetLocation.Z = StartLocation.Z;
 		FVector TeleportDirection = (TargetLocation - StartLocation).GetSafeNormal();
@@ -226,6 +230,7 @@ void AJamCharacter::Teleport()
 		if (bSuccess)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("평면 고정 거리 텔레포트 완료!"));
+			SpawnEffect(TeleportEffect, FinalTeleportLocation);
 		}
 
 		GetWorldTimerManager().SetTimer(
@@ -432,6 +437,8 @@ void AJamCharacter::IceStorm()
     		FinalAttackCenter = StartLocation + (AttackDirection * IceStormMaxRangeRadius);
     	}
 
+    	SpawnEffect(IceStormEffect, FinalAttackCenter);
+    	
     	// 4. 범위(반지름 n) 내의 타겟들을 감지 (OverlapMultiByChannel 사용)
     	TArray<FHitResult> HitResults;
     	FCollisionShape SphereShape = FCollisionShape::MakeSphere(IceStormAttackRadius); // 반지름 n 짜리 구체 생성
@@ -517,6 +524,63 @@ void AJamCharacter::EarthQuake()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EarthQuakeSound, GetActorLocation());
 	}
+
+	SpawnEffect(EarthQuakeEffect, GetActorLocation());
+
+	FVector CenterLocation = GetActorLocation();
+	FCollisionShape SphereShape = FCollisionShape::MakeSphere(EarthQuakeRadius);
+    
+	TArray<FOverlapResult> OverlapResults;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bHasHits = GetWorld()->OverlapMultiByChannel(
+		OverlapResults,
+		CenterLocation,
+		FQuat::Identity,
+		ECC_Pawn, // 대상을 감지할 콜리전 채널 (보통 몬스터는 Pawn)
+		SphereShape,
+		QueryParams
+	);
+
+	// 4. [디버그용] 에디터 화면에 빨간색 원형으로 범위 그려서 시각화 확인
+	UKismetSystemLibrary::DrawDebugCircle(
+		GetWorld(),
+		CenterLocation,
+		EarthQuakeRadius,
+		32, // 원을 구성할 선의 개수 (많을수록 부드러움)
+		FLinearColor::Red,
+		1.5f, // 1.5초 동안 화면에 표시
+		2.0f, // 선 두께
+		FVector(0, 0, 1) // 평면에 그리기 위해 하늘 방향(Z축) 벡터 지정
+	);
+
+	// 5. 데미지 적용하기
+	if (bHasHits)
+	{
+		// 중복 데미지 방지를 위해 이미 데미지를 준 액터들을 체크할 배열 (동일 타겟 중복 감지 방지)
+		TArray<AActor*> DamagedActors;
+
+		for (const FOverlapResult& Overlap : OverlapResults)
+		{
+			AActor* HitActor = Overlap.GetActor();
+			if (HitActor && !DamagedActors.Contains(HitActor))
+			{
+				DamagedActors.Add(HitActor);
+
+				// 언리얼 표준 데미지 시스템으로 주변 적들에게 피해 전달
+				UGameplayStatics::ApplyDamage(
+					HitActor,
+					EarthQuakeDamage,
+					GetController(),
+					this,
+					UDamageType::StaticClass()
+				);
+
+				UE_LOG(LogTemp, Warning, TEXT("지진 마법 적중! 대상: %s"), *HitActor->GetName());
+			}
+		}
+	}
 	
 	StackDiscord();
 	
@@ -596,6 +660,7 @@ void AJamCharacter::GodModeOff()
 void AJamCharacter::StartGod()
 {
 	GodMode();
+	OnBuffChanged.Broadcast();
 }
 
 void AJamCharacter::CoolZero()
@@ -649,6 +714,7 @@ void AJamCharacter::CoolZeroOff()
 void AJamCharacter::StartCoolZero()
 {
 	CoolZero();
+	OnBuffChanged.Broadcast();
 }
 
 void AJamCharacter::LevelUp()
@@ -656,6 +722,12 @@ void AJamCharacter::LevelUp()
 	int32 CurrentLevel = StatusComponent->GetLevel();
 	int32 RandomIndex = 0;
 
+	SpawnEffect(LevelUpEffect, GetActorLocation());
+	if (LevelUpSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, LevelUpSound, GetActorLocation());
+	}
+	
 	if (StatusComponent)
 	{
 		StatusComponent->AddMaxHealth(15.0f);
@@ -706,6 +778,21 @@ void AJamCharacter::LevelUp()
 void AJamCharacter::OnDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] DEAD!!!!!!"))
+}
+
+void AJamCharacter::SpawnEffect(UNiagaraSystem* Effect, FVector SpawnLocation)
+{
+	if (Effect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			Effect,
+			SpawnLocation,
+			GetActorRotation(),     
+			FVector(1.0f),          
+			true,                  
+			true);
+	}
 }
 
 void AJamCharacter::ApplyRandomDebuff()

@@ -24,6 +24,8 @@ void UPlayerHUD::NativeConstruct()
 		JamCharacterRef->StatusComponent->OnLevelChanged.AddDynamic(this, &UPlayerHUD::SetLevelText);
 		JamCharacterRef->OnDebuffChanged.AddDynamic(this, &UPlayerHUD::RefreshDebuffs);
 		JamCharacterRef->OnDebuffActivated.AddDynamic(this, &UPlayerHUD::OnDebuffActivated);
+		JamCharacterRef->OnBuffChanged.AddDynamic(this, &UPlayerHUD::RefreshBuffs);
+		RefreshBuffs();
 		RefreshDebuffs();
 	}
 }
@@ -258,6 +260,34 @@ void UPlayerHUD::RefreshDebuffs()
 			NewSlot->SetBuffSlot(DebuffIconList[Index], Index, JamCharacterRef);
 			NewSlot->AddToViewport();
 			DebuffSlotList->AddChild(NewSlot);
+		}
+	}
+}
+
+void UPlayerHUD::RefreshBuffs()
+{
+	BuffSlotList->ClearChildren();
+	
+	if (JamCharacterRef)
+	{
+		FTimerManager& TM = GetWorld()->GetTimerManager();
+
+		//쿨제로 버프 작동 중이면 아이콘 표시
+		if (TM.IsTimerActive(JamCharacterRef->CoolZeroCoolTimer) ||
+			TM.IsTimerActive(JamCharacterRef->CoolZeroRemainingTimer))
+		{
+			UBuffSlot* NewSlot = CreateWidget<UBuffSlot>(GetWorld(), BuffSlotClass);
+			NewSlot->SetBuffSlot(DebuffIconList[5], 5, JamCharacterRef);
+			BuffSlotList->AddChild(NewSlot);
+		}
+
+		//무적 버프 작동 중이면 아이콘 표시
+		if (TM.IsTimerActive(JamCharacterRef->GodCoolTimer) ||
+			TM.IsTimerActive(JamCharacterRef->GodRemainingTimer))
+		{
+			UBuffSlot* NewSlot = CreateWidget<UBuffSlot>(GetWorld(), BuffSlotClass);
+			NewSlot->SetBuffSlot(DebuffIconList[6], 6, JamCharacterRef);
+			BuffSlotList->AddChild(NewSlot);
 		}
 	}
 }

@@ -28,6 +28,8 @@ public:
 	class UTextBlock* StackText;
 	UPROPERTY(meta=(BindWidget))
 	class UProgressBar* CoolTime;
+	UPROPERTY(meta=(BindWidget))
+	UTextBlock* CoolTimeText;
 
 	virtual void NativeConstruct() override;
 

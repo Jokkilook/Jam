@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "NiagaraSystem.h"
 #include "JamCharacter.generated.h"
 
 class UPlayerHUD;
@@ -11,6 +12,7 @@ struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDebuffChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDebuffActivated, int8, DebuffIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuffChanged);
 
 UCLASS(Blueprintable)
 class AJamCharacter : public ACharacter
@@ -66,6 +68,8 @@ public:
 	bool CanTeleport = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Teleport")
 	USoundBase* TeleportSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Teleport|Effect")
+	UNiagaraSystem* TeleportEffect;
 	
 	//마나샷 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
@@ -80,7 +84,8 @@ public:
 	TSubclassOf<class ASkillProjectile> ManaBulletProjectileClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	USoundBase* ManaBulletSound;
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|ManaBullet|Effect")
+	UNiagaraSystem* ManaBulletEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	TSubclassOf<class ASkillProjectile> FireBallProjectileClass;
 	
@@ -91,10 +96,12 @@ public:
 	float FireBallManaUse = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
 	float FireBallDamage = 40.0f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|FireBall")
-	USoundBase* FireBallSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
 	bool CanFireBall = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|FireBall")
+	USoundBase* FireBallSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|FireBall|Effect")
+	UNiagaraSystem* FireBallEffect;
 	
 	//아이스스톰 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|IceStorm")
@@ -111,6 +118,8 @@ public:
 	float IceStormMaxRangeRadius = 800.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|IceStorm")
 	USoundBase* IceStormSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|IceStorm|Effect")
+	UNiagaraSystem* IceStormEffect;
 	
 	//지진 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
@@ -118,11 +127,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	float EarthQuakeManaUse = 35.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
+	float EarthQuakeRadius = 400.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	float EarthQuakeDamage = 70.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	bool CanEarthQuake = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|EarthQuake")
 	USoundBase* EarthQuakeSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|EarthQuake|Effect")
+	UNiagaraSystem* EarthQuakeEffect;
 	
 	//바인딩 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|Binding")
@@ -135,6 +148,8 @@ public:
 	bool CanBinding = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding")
 	USoundBase* BindingSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|Binding|Effect")
+	UNiagaraSystem* BindingEffect;
 
 	//동료스킬 무적 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|God")
@@ -143,6 +158,8 @@ public:
 	float GodRemainingTime = 3.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|God")
 	USoundBase* GodSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Skills|God|Effect")
+	UNiagaraSystem* GodEffect;	
 	
 	//동료스킬 스킬쿨제로 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|CoolZero")
@@ -153,6 +170,14 @@ public:
 	bool IsCoolZero = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skills|CoolZero")
 	USoundBase* CoolZeroSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skills|CoolZero|Effect")
+	UNiagaraSystem* CoolZeroEffect;
+
+	//레벨업 이펙트
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effect")
+	UNiagaraSystem* LevelUpEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundBase* LevelUpSound;
 	
 	//스킬 쿨타임 타이머스~
 	FTimerHandle TeleportCoolTimer;
@@ -227,9 +252,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnDeath();
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnEffect(UNiagaraSystem* Effect, FVector SpawnLocation);
+
 	//버어프
 	FOnDebuffChanged OnDebuffChanged;
 	FOnDebuffActivated OnDebuffActivated;
+	FOnBuffChanged OnBuffChanged;
 	
 	//스택
 	UPROPERTY(BlueprintReadOnly)
@@ -243,11 +272,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debuff")
 	float ManaDebuffAmount = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debuff")
-	float SpeedDebuffRate = 30.0f;
+	float SpeedDebuffRate = 60.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debuff")
-	float AttackDebuffRate = 30.0f;
+	float AttackDebuffRate = 60.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debuff")
-	float DamageDebuffRate = 30.0f;
+	float DamageDebuffRate = 60.0f;
 	
 	//버프 타이머
 	FTimerHandle SpeedDebuffTimer;

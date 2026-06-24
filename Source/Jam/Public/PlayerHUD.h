@@ -101,6 +101,10 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* DebuffSlotList;
 
+	//버프 가로 박스
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* BuffSlotList;
+
 	//디버프 슬롯 클래스
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UBuffSlot> BuffSlotClass;
@@ -147,4 +151,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RefreshDebuffs();
+
+	UFUNCTION(BlueprintCallable)
+	void RefreshBuffs();
 };
