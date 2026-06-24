@@ -4,6 +4,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "SkillProjectile.h"
 #include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -249,6 +250,39 @@ void AJamCharacter::ManaBullet()
 	if (!IsCoolZero) StatusComponent->DecreaseMana(ManaBulletManaUse);
 
 	//스킬 사용 로직========= 이 밑으로 구현
+	if (ManaBulletProjectileClass)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			FHitResult CursorHit;
+			PC->GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+
+			FVector TargetLocation = CursorHit.bBlockingHit ? CursorHit.ImpactPoint : CursorHit.TraceEnd;
+
+			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.0f);
+			FVector Direction = (TargetLocation - SpawnLocation).GetSafeNormal();
+			Direction.Z = 0.0f;
+			Direction.Normalize();
+			SpawnLocation += Direction * 70.0f;
+
+			FRotator SpawnRotation = Direction.Rotation();
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			ASkillProjectile* Projectile = GetWorld()->SpawnActor<ASkillProjectile>(
+				ManaBulletProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+			if (Projectile)
+			{
+				Projectile->FireInDirection(Direction);
+			}
+		}
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] ManaBullet Used"))
 
 	
@@ -283,6 +317,40 @@ void AJamCharacter::FireBall()
 	//스킬 사용 로직========= 이 밑으로 구현
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] FireBall Used"))
 
+	//스킬 사용 로직========= 이 밑으로 구현
+	if (FireBallProjectileClass)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			FHitResult CursorHit;
+			PC->GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+
+			FVector TargetLocation = CursorHit.bBlockingHit ? CursorHit.ImpactPoint : CursorHit.TraceEnd;
+
+			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.0f);
+			FVector Direction = (TargetLocation - SpawnLocation).GetSafeNormal();
+			Direction.Z = 0.0f;
+			Direction.Normalize();
+			SpawnLocation += Direction * 70.0f;
+
+			FRotator SpawnRotation = Direction.Rotation();
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			ASkillProjectile* Projectile = GetWorld()->SpawnActor<ASkillProjectile>(
+				FireBallProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+			if (Projectile)
+			{
+				Projectile->FireInDirection(Direction);
+			}
+		}
+	}
+	
 	StackDiscord();
 	
 	//스킬 사용 후 쿨타임 작동 

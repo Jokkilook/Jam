@@ -15,9 +15,9 @@ ASkillProjectile::ASkillProjectile()
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionSphere->SetCollisionObjectType(ECC_WorldDynamic);
+	CollisionSphere->InitSphereRadius(50.0f);
 	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
 	CollisionSphere->SetGenerateOverlapEvents(true);
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ASkillProjectile::OnOverlap);
 	RootComponent = CollisionSphere;
@@ -59,7 +59,7 @@ void ASkillProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	{
 		AController* OwnerController = GetInstigator() ? GetInstigator()->GetController() : nullptr;
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+		Destroy();
 	}
-	Destroy();
 }
 

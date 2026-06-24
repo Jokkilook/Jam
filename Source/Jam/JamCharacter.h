@@ -75,6 +75,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
 	TSubclassOf<class ASkillProjectile> ManaBulletProjectileClass;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|ManaBullet")
+	TSubclassOf<class ASkillProjectile> FireBallProjectileClass;
+	
 	//파이어볼 스킬 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills|FireBall")
 	float FireBallCoolTime = 5.0f;
