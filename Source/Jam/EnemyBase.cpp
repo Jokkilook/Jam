@@ -112,10 +112,14 @@ void AEnemyBase::Die()
 		APlayerController* PC = GetWorld()->GetFirstPlayerController();
 		if (PC)
 		{
-			AJamCharacter* JamRef = Cast<AJamCharacter>(PC->GetOwner());
+			AJamCharacter* JamRef = Cast<AJamCharacter>(PC->GetCharacter());
+			if (!JamRef)
+			{
+				JamRef = Cast<AJamCharacter>(PC->GetPawn());
+			}
 			if (JamRef)
 			{
-				
+				JamRef->GameClear();
 			}
 		}
 	}

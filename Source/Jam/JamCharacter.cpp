@@ -916,7 +916,11 @@ void AJamCharacter::GameClear()
 	{
 		FInputModeUIOnly InputMode;
 		PC->SetInputMode(InputMode);
-		PlayerHUD->FadeOut();
+
+		if (PlayerHUD)
+		{
+			PlayerHUD->FadeOut();
+		}
 	}
 }
 
