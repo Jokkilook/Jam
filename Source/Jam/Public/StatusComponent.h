@@ -30,15 +30,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDeath OnDeath;
 	
-private:
+public:
 
 	UPROPERTY()
-	float CurrentHealth = 100.0f;
-	UPROPERTY()
+	float CurrentHealth = MaxHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHealth = 100.0f;
 	UPROPERTY()
-	float CurrentMana = 100.0f;
-	UPROPERTY()
+	float CurrentMana = MaxMana;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxMana = 100.0f;
 	UPROPERTY()
 	float CurrentExp = 0.0f;

@@ -83,7 +83,10 @@ void UStatusComponent::RefreshStatus()
 // Called when the game starts
 void UStatusComponent::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
+	IncreaseHealth(MaxHealth);
+	IncreaseMana(MaxMana);
 }
 
 

@@ -158,4 +158,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RefreshBuffs();
+
+	UFUNCTION(BlueprintCallable)
+	void FadeOut();
+
+	UPROPERTY(meta=(BindWidgetAnim), Transient)
+	UWidgetAnimation* FadeOutAnim;
 };

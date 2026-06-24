@@ -906,6 +906,16 @@ void AJamCharacter::Respawn()
 	}
 }
 
+void AJamCharacter::GameClear()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		FInputModeUIOnly InputMode;
+		PC->SetInputMode(InputMode);
+		PlayerHUD->FadeOut();
+	}
+}
+
 void AJamCharacter::SpawnEffect(UNiagaraSystem* Effect, FVector SpawnLocation)
 {
 	if (Effect)

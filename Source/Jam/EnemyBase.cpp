@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "JamCharacter.h"
 #include "StatusComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -109,9 +110,13 @@ void AEnemyBase::Die()
 	if (ActorHasTag("Boss"))
 	{
 		APlayerController* PC = GetWorld()->GetFirstPlayerController();
-		if (PC && PC->PlayerCameraManager)
+		if (PC)
 		{
-			PC->PlayerCameraManager->StartCameraFade(0.0f, 1.0f, 2.0f, FLinearColor::Black, false, true);
+			AJamCharacter* JamRef = Cast<AJamCharacter>(PC->GetOwner());
+			if (JamRef)
+			{
+				
+			}
 		}
 	}
 

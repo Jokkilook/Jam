@@ -59,7 +59,7 @@ public:
 	bool bIsDead = false;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	UStatusComponent* StatusComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")

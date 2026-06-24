@@ -293,3 +293,8 @@ void UPlayerHUD::RefreshBuffs()
 		}
 	}
 }
+
+void UPlayerHUD::FadeOut()
+{
+	PlayAnimation(FadeOutAnim);
+}
