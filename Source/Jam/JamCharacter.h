@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DeathScreen.h"
 #include "GameFramework/Character.h"
 #include "NiagaraSystem.h"
 #include "JamCharacter.generated.h"
@@ -266,6 +267,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void OnDeath();
+
+	UFUNCTION(BlueprintCallable)
+	void Respawn();
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimationAsset* DeathAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDead = false;
+
+	FTimerHandle RespawnTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDeathScreen> DeathScreenClass;
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnEffect(UNiagaraSystem* Effect, FVector SpawnLocation);

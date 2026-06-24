@@ -23,6 +23,7 @@ void UStatusComponent::IncreaseHealth(float Amount)
 
 void UStatusComponent::DecreaseHealth(float Amount)
 {
+	if (CurrentHealth <= 0) return;
 	CurrentHealth = FMath::Clamp(CurrentHealth - Amount, 0.0f, MaxHealth);
 
 	if (CurrentHealth <= 0)

@@ -21,6 +21,7 @@ void UBuffSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		FTimerManager& TM = GetWorld()->GetTimerManager();
 		float CoolTimePercent = 0.0f;
 		float RemainingTime = 0.0f;
+		int8 Stack = 0;
 		switch (BuffIndex)
 		{
 			case 2:
@@ -40,6 +41,9 @@ void UBuffSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 				RemainingTime = TM.GetTimerRemaining(JamCharacterRef->GodCoolTimer);
 				CoolTimePercent = RemainingTime / JamCharacterRef->GodCoolTime;
 				break;
+			case 7:
+				Stack = JamCharacterRef->DiscordStack;
+				break;
 		}
 		
 		CoolTime->SetPercent(CoolTimePercent);
@@ -53,6 +57,15 @@ void UBuffSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			CoolTimeText->SetVisibility(ESlateVisibility::Visible);
 			FString RemainingStr = FString::Printf(TEXT("%.0f"), RemainingTime);
 			CoolTimeText->SetText(FText::FromString(RemainingStr));
+		}
+
+		if (Stack == 0)
+		{
+			StackText->SetVisibility(ESlateVisibility::Hidden);
+		} else
+		{
+			StackText->SetVisibility(ESlateVisibility::Visible);
+			StackText->SetText(FText::FromString(FString::FromInt(Stack)));
 		}
 	}
 }

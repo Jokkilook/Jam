@@ -118,6 +118,10 @@ public:
 	UImage* DebuffAlarm;
 	UPROPERTY(meta=(BindWidgetAnim), Transient)
 	UWidgetAnimation* DebuffAlarmAnim;
+
+	//부렵화음 스택
+	UPROPERTY(meta=(BindWidget))
+	UBuffSlot* DiscordSlot;
 	
 	virtual void NativeConstruct() override;
 

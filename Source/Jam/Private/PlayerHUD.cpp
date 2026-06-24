@@ -18,6 +18,8 @@ void UPlayerHUD::NativeConstruct()
 
 	if (JamCharacterRef)
 	{
+		DiscordSlot->SetBuffSlot(DebuffIconList[7], 7, JamCharacterRef);
+		
 		JamCharacterRef->StatusComponent->OnHealthChanged.AddDynamic(this, &UPlayerHUD::SetHealthBar);
 		JamCharacterRef->StatusComponent->OnManaChanged.AddDynamic(this, &UPlayerHUD::SetManaBar);
 		JamCharacterRef->StatusComponent->OnExpChanged.AddDynamic(this, &UPlayerHUD::SetExpBar);

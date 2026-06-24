@@ -132,11 +132,6 @@ float AJamCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEv
 	if (StatusComponent && ActualDamage > 0)
 	{
 		StatusComponent->DecreaseHealth(ActualDamage);
-
-		if (StatusComponent->GetCurrentHealth() <= 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Player is dead"));
-		}
 	}
 
 	return ActualDamage;
@@ -877,6 +872,38 @@ void AJamCharacter::LevelUp()
 void AJamCharacter::OnDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] DEAD!!!!!!"))
+	IsDead = true;
+	if (DeathAnim)
+	{
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			FInputModeUIOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(
+	RespawnTimer,
+	this,
+	&AJamCharacter::Respawn,
+	5.0f);
+}
+
+void AJamCharacter::Respawn()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] Respawn!!!!!!"))
+	IsDead = false;
+	if (StatusComponent)
+	{
+		StatusComponent->IncreaseHealth(StatusComponent->GetMaxHealth());
+		StatusComponent->IncreaseMana(StatusComponent->GetMaxMana());
+	}
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		FInputModeGameAndUI InputMode;
+		PC->SetInputMode(InputMode);
+	}
 }
 
 void AJamCharacter::SpawnEffect(UNiagaraSystem* Effect, FVector SpawnLocation)
