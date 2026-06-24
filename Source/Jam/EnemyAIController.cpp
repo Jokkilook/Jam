@@ -47,7 +47,7 @@ void AEnemyAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulu
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		if (Actor->ActorHasTag("Enemy"))
+		if (Actor->ActorHasTag("Enemy") || Actor->ActorHasTag("Colleague"))
 		{
 			return;
 		}
