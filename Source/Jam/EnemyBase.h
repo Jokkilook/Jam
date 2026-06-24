@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
 	UAnimMontage* AttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+	USoundBase* AttackSound;
+
 	// 타격 시 잠깐 적용할 머티리얼 (에디터에서 설정)
 	UPROPERTY(EditDefaultsOnly, Category = "Hit")
 	UMaterialInterface* HitMaterial;

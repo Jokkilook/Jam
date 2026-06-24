@@ -7,6 +7,7 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "StatusComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -37,7 +38,12 @@ void AEnemyBase::Tick(float DeltaTime)
 
 void AEnemyBase::ExecuteAttack_Implementation()
 {
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
+	}
 }
+
 
 float AEnemyBase::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
