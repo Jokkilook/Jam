@@ -454,6 +454,7 @@ void AJamCharacter::IceStorm()
 			QueryParams
 		);
 
+    	/*
     	// 5. 디버그용 원 그리기 (에디터에서 범위 시각적으로 확인용)
     	UKismetSystemLibrary::DrawDebugCircle(
 			GetWorld(),
@@ -465,7 +466,8 @@ void AJamCharacter::IceStorm()
 			1.0f,
 			FVector(0, 0, 1) // 하늘 방향(Z축)을 기준으로 원을 그림
 		);
-
+		*/
+    	
     	// 6. 감지된 적들에게 데미지 적용
     	if (bHit)
     	{
@@ -541,6 +543,7 @@ void AJamCharacter::EarthQuake()
 		QueryParams
 	);
 
+	/*
 	// 4. [디버그용] 에디터 화면에 빨간색 원형으로 범위 그려서 시각화 확인
 	UKismetSystemLibrary::DrawDebugCircle(
 		GetWorld(),
@@ -552,7 +555,8 @@ void AJamCharacter::EarthQuake()
 		2.0f, // 선 두께
 		FVector(0, 0, 1) // 평면에 그리기 위해 하늘 방향(Z축) 벡터 지정
 	);
-
+	*/
+	
 	// 5. 데미지 적용하기
 	if (bHasHits)
 	{
@@ -745,7 +749,7 @@ void AJamCharacter::GodModeOff()
 	GetWorldTimerManager().SetTimer(
 		GodCoolTimer,
 		this,
-		&AJamCharacter::GodModeOff,
+		&AJamCharacter::GodMode,
 		GodCoolTime);
 }
 
@@ -801,7 +805,7 @@ void AJamCharacter::CoolZeroOff()
 	GetWorldTimerManager().SetTimer(
 		CoolZeroCoolTimer,
 		this,
-		&AJamCharacter::CoolZeroOff,
+		&AJamCharacter::CoolZero,
 		CoolZeroCoolTime);
 }
 
