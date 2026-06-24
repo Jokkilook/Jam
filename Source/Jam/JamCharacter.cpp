@@ -701,6 +701,15 @@ void AJamCharacter::Binding()
 				{
 					AIC->GetBrainComponent()->RestartLogic();
 				}
+				
+				// 언리얼 표준 데미지 시스템으로 주변 적들에게 피해 전달
+				UGameplayStatics::ApplyDamage(
+					BossChar,
+					BindingDamage,
+					GetController(),
+					this,
+					UDamageType::StaticClass()
+				);
 			}
 		},
 		BindingDuration,

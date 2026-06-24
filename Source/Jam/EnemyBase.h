@@ -61,6 +61,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
 	UStatusComponent* StatusComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* HitSound;
 
 private:
 	// 원본 머티리얼 저장용

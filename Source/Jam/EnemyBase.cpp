@@ -51,6 +51,11 @@ float AEnemyBase::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent
 
 	if (StatusComponent && ActualDamage > 0)
 	{
+		if (HitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+		}
+		
 		StatusComponent->DecreaseHealth(ActualDamage);
 		
 		if (StatusComponent->GetCurrentHealth() <= 0)
