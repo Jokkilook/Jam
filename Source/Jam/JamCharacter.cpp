@@ -17,6 +17,7 @@
 #include "Engine/World.h"
 #include "Public/PlayerHUD.h"
 #include "Public/StatusComponent.h"
+#include "Public/SkillProjectile.h"
 
 AJamCharacter::AJamCharacter()
 {
@@ -75,6 +76,12 @@ void AJamCharacter::BeginPlay()
 
 		StatusComponent->OnDeath.AddDynamic(this, &AJamCharacter::OnDeath);
 	}
+
+	// 원본 머티리얼 저장
+	for (int32 i = 0; i < GetMesh()->GetNumMaterials(); i++)
+	{
+		OriginalMaterials.Add(GetMesh()->GetMaterial(i));
+	}
 }
 
 void AJamCharacter::Tick(float DeltaSeconds)
@@ -115,13 +122,6 @@ void AJamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(EarthQuakeAction, ETriggerEvent::Started, this, &AJamCharacter::EarthQuake);
 		EnhancedInputComponent->BindAction(BindingAction, ETriggerEvent::Started, this, &AJamCharacter::Binding);
 	}
-}
-
-float AJamCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-	class AController* EventInstigator, AActor* DamageCauser)
-{
-	
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void AJamCharacter::Move(const FInputActionValue& Value)
@@ -238,6 +238,47 @@ void AJamCharacter::ManaBullet()
 	if (!IsCoolZero) StatusComponent->DecreaseMana(ManaBulletManaUse);
 
 	//스킬 사용 로직========= 이 밑으로 구현
+	if (ManaBulletProjectileClass)
+	{
+		// 마우스 커서가 가리키는 월드 위치 구하기
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			FHitResult CursorHit;
+			PC->GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+
+			FVector TargetLocation = CursorHit.bBlockingHit
+				? CursorHit.ImpactPoint
+				: CursorHit.TraceEnd;
+
+			// 발사 시작 위치: 캐릭터 높이 + 방향으로 캡슐 밖까지 밀어서 스폰
+			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.0f);
+			FVector Direction = (TargetLocation - SpawnLocation).GetSafeNormal();
+			// Z축은 평탄하게 유지 (탑다운 뷰)
+			Direction.Z = 0.0f;
+			Direction.Normalize();
+			// 캡슐 반지름(42) + 발사체 반지름(20) + 여유분만큼 앞으로 밀어서 스폰
+			SpawnLocation += Direction * 70.0f;
+
+			FRotator SpawnRotation = Direction.Rotation();
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			ASkillProjectile* Projectile = GetWorld()->SpawnActor<ASkillProjectile>(
+				ManaBulletProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+			
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Class : %s"), Projectile ? *Projectile->GetClass()->GetName() : TEXT("None")));
+			if (Projectile)
+			{
+				Projectile->FireInDirection(Direction);
+				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Projectile : %s"), *Projectile->GetName()));
+			}
+		}
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("[PLAYER] ManaBullet Used"))
 
 	
@@ -577,7 +618,27 @@ float AJamCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEv
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Player is dead"));
 		}
+		else
+		{
+			// 타격 플래시 - HitMaterial로 교체 후 0.1초 뒤 복구
+			if (HitMaterial)
+			{
+				for (int32 i = 0; i < GetMesh()->GetNumMaterials(); i++)
+				{
+					GetMesh()->SetMaterial(i, HitMaterial);
+				}
+				GetWorldTimerManager().SetTimer(HitFlashTimerHandle, this, &AJamCharacter::RestoreOriginalMaterials, 0.1f, false);
+			}
+		}
 	}
 
 	return ActualDamage;
+}
+
+void AJamCharacter::RestoreOriginalMaterials()
+{
+	for (int32 i = 0; i < OriginalMaterials.Num(); i++)
+	{
+		GetMesh()->SetMaterial(i, OriginalMaterials[i]);
+	}
 }
