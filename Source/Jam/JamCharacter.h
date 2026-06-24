@@ -48,6 +48,8 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION(BlueprintCallable)
 	void Move(const FInputActionValue& Value);
 

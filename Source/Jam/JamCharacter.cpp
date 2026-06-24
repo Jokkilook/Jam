@@ -52,6 +52,8 @@ AJamCharacter::AJamCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	
+	Tags.Add("Player");
 }
 
 void AJamCharacter::BeginPlay()
@@ -105,4 +107,21 @@ void AJamCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+}
+
+float AJamCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (StatusComponent && ActualDamage > 0)
+	{
+		StatusComponent->DecreaseHealth(ActualDamage);
+
+		if (StatusComponent->GetCurrentHealth() <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player is dead"));
+		}
+	}
+
+	return ActualDamage;
 }
